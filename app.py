@@ -24,7 +24,8 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     return(
-        f"welcome to the best vacation ever API<br/>"
+        f"<head><b>welcome to the best vacation ever API<br/></head></b>"
+        
         f"<br/>"
         f"These are your available Routes:<br/>"
         f"<br>"
@@ -37,10 +38,10 @@ def home():
         f"D. /api/v1.0/tobs -- Directory of Temperature Observations (TOBS)"
                                 f"<br>"
 
-        f"E. /api/v1.0/<start> -- Date range search with only start date"
+        f"E. /api/v1.0/<start> -- Date range search with only start date. <b>Enter Dates in this format 2012-02-28</b>"
                                 f"<br>"
 
-        f"F. /api/v1.0/<start>/<end> -- Date range search"
+        f"F. /api/v1.0/<start>/<end> -- Date range search: <b>Enter Dates in this format 2012-02-28/2012-02-28"
         
     )
 
@@ -87,7 +88,20 @@ def tobs():
         #Jsonify
         return jsonify(pprcp_list)
 
+@app.route("/api/v1.0/<start>")
+def start(start=None):
+    start_date = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), 
+    func.max(Measurement.tobs)).filter(Measurement.date >= start).group_by(Measurement.date).all()
+    start_date=list(start_date)
+    return jsonify(start_date)
 
+@app.route("/api/v1.0/<start>/<end>")
+def start_end(start=None, end=None):
+    
+    date_range = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), 
+        func.max(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).group_by(Measurement.date).all()
+    date_range=list(date_range)
+    return jsonify(date_range)
 
 if __name__=="__main__":
     app.run(debug=True)
